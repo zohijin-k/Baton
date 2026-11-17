@@ -1,0 +1,364 @@
+@import "tailwindcss";
+
+/* ───────────── 디자인 토큰 ─────────────
+   색 비율: 중립 70% / 초록 20~25% / 노랑 5~10%. 노랑은 배경·채움에만 (글자색 금지)
+   그림자 없음. 층은 표면 밝기 단계로만: 배경 < 표면1(카드) < 표면2(입력·칩·눌림) < 표면3(모달·시트)
+   기본 테마는 다크. 모든 글자/배경 조합 4.5:1 이상 (비활성 요소 제외) */
+:root {
+  /* 라이트: 다크와 같은 원칙 — 그림자 없이 표면 단계 + 옅은 테두리 */
+  --bg: #f6f4ef;
+  --card: #ffffff; /* 표면1 */
+  --raised: #ece8e0; /* 표면2: 입력·칩·눌림·선택 */
+  --sheet: #ffffff; /* 표면3: 모달·시트 (뒤 화면은 오버레이로 낮춤) */
+  --line: rgb(46 46 46 / 0.08);
+  --card-border: rgb(46 46 46 / 0.07);
+  --ink: #2e2e2e;
+  --muted: #686862;
+  --tab-off: #6b6e73; /* 하단 탭 비활성 라벨·아이콘 */
+  --disabled-bg: #ece8e0;
+  --disabled-ink: #918e87; /* 비활성: 다크와 비슷한 2.7:1 수준 */
+  --primary: #3f6e5a; /* 흰 글자 5.9:1 */
+  --primary-press: #345b4a;
+  --on-primary: #ffffff;
+  --green: #1f6e54; /* 라이트 민트: 강조 아이콘·활성 탭·확정 체크 */
+  --on-green: #ffffff;
+  --green-soft: #eaf2ed; /* 확정 카드 배경 */
+  --sun: #f2c14e;
+  --sun-soft: #fcf1d2;
+  --on-sun-soft: #4a3b12;
+  --warn: #b4442e;
+  --warn-soft: #fbe9e4;
+  --draft-line: #8e8b84;
+  --dot-empty: #8e8b84;
+  --empty-icon: #a57514;
+  --glow: rgb(242 193 78 / 0.18);
+  --toast-bg: #2e2e2e;
+  --toast-ink: #f6f4ef;
+  --overlay: rgb(46 46 46 / 0.4);
+  /* 듀티 배지 '하루의 빛': D 아침 햇살 · E 노을 · N 밤 · OFF 쉼 · R 기타 (연한 배경 + 진한 글자) */
+  --duty-d-bg: #fcefc7;
+  --duty-d-ink: #7a5a00;
+  --duty-e-bg: #fbe1da;
+  --duty-e-ink: #a2412a;
+  --duty-n-bg: #e3e5fb;
+  --duty-n-ink: #3b43a0;
+  --duty-off-bg: #ddf3ea;
+  --duty-off-ink: #1f6e54;
+  --duty-r-bg: #f7f7f8; /* 명세는 배경 없음이나 R도 연한 배경 유지 (글자 대비 4.9:1) */
+  --duty-r-ink: #6b6e73;
+  --duty-r-border: #b9bbbf;
+  --grid-line: rgb(0 0 0 / 0.06); /* 달력 칸 구분선 */
+  --cal-border: rgb(0 0 0 / 0.08); /* 달력 카드 바깥 테두리 (그림자·글로우 없음) */
+  /* 달력 카드 위→아래 4단: 월 이동 헤더(가장 진함) > 근무 횟수 줄 > 요일 줄 > 날짜 칸(흰색). 색으로만 구분 */
+  --cal-head: #e3dfd5;
+  --cal-sum: #eeebe4;
+  --cal-week: #f8f7f3;
+  --cal-screen: #edece8; /* 듀티 화면 배경: 흰 달력 카드와 구분되게 한 단계 어둡게 (듀티 탭에서만) */
+  --cell: #ffffff; /* 날짜 칸 배경 = 카드 본문 */
+  /* 오늘 (라이트): '날짜 숫자 + 근무 배지' 영역만 연한 레몬 + 레몬 2px 테두리.
+     D(데이)의 따뜻한 호박색(#7A5A00·#FCEFC7)과 겹치지 않게 초록기 도는 차가운 노랑. 날짜 숫자 색은 바꾸지 않음 */
+  --today-fill: #fff9c4;
+  --today-ring: #e0c200;
+  --today-ring-w: 2px;
+  /* 달력 글자 (라이트 가독성) */
+  --weekday: #6b6e73; /* 요일 헤더 */
+  --role-ink: #6b6e73; /* 칸의 차·액 */
+  --ev-text: #4a4d52; /* 칸 안 일정 한 줄 */
+  --sum-label: #4a4d52; /* 요약 라벨 (OFF·D…) */
+  --sum-num: #2a2b2e; /* 요약 숫자 */
+  --cal-head-press: #d6d1c5;
+  --holiday: #b5503f; /* 공휴일 날짜 숫자 (주말은 평일과 같은 색) */
+  /* 일정 색 5가지: 보라·파랑·분홍·민트·주황 (키 cyan=파랑, magenta=분홍은 저장 호환용 이름) */
+  --ev-violet: #7c4ddb;
+  --ev-cyan: #1a7fc4;
+  --ev-magenta: #b8338f;
+  --ev-mint: #0f8f84;
+  --ev-orange: #cf6118;
+  color-scheme: light;
+}
+
+/* 다크(기본): 초록빛이 도는 먹색 계열 */
+:root[data-theme="dark"] {
+  /* 배경·표면: 초록기 없는 뉴트럴 차콜 */
+  --bg: #111214;
+  --card: #1b1d21; /* 표면1 */
+  --raised: #24272c; /* 표면2: 입력창 */
+  --sheet: #2c2f35; /* 표면3: 모달 */
+  --line: rgb(255 255 255 / 0.07);
+  --card-border: rgb(255 255 255 / 0.05);
+  --ink: #f1f1ef;
+  --muted: #9a9da3;
+  --tab-off: #8e9197; /* 비활성 #5F636A는 탭 바 위 4.5:1 미만이라 탭 글자만 한 단계 밝게 (5.3:1) */
+  --disabled-bg: #24272c;
+  --disabled-ink: #5f636a;
+  /* 메인: 민트 */
+  --primary: #5ed1a8;
+  --primary-press: #4bbe95;
+  --on-primary: #0b1a15;
+  --green: #5ed1a8; /* 강조: 아이콘·활성 탭·확정 체크 */
+  --on-green: #0b1a15;
+  --green-soft: #15302a; /* 확정 카드 배경 (+ 왼쪽 3px 민트 막대) */
+  /* 해바라기 노랑: OFF 배지, 지금 할 일 막대, 활성 탭 점, PIN 점에만 */
+  --sun: #f2c14e;
+  --sun-soft: #2e2614; /* 선택된 칩 */
+  --on-sun-soft: #f6dfa0;
+  --warn: #ff8a70;
+  --warn-soft: #36201b;
+  --draft-line: #5f636a;
+  --dot-empty: #5f636a;
+  --empty-icon: #f2c14e;
+  --glow: rgb(242 193 78 / 0.08);
+  --toast-bg: #2c2f35;
+  --toast-ink: #f1f1ef;
+  --overlay: rgb(0 0 0 / 0.6);
+  /* 듀티 배지 '하루의 빛' (어두운 배경 + 색 글자) */
+  --duty-d-bg: #3a3015;
+  --duty-d-ink: #f4c95d;
+  --duty-e-bg: #3a2020;
+  --duty-e-ink: #f49b84;
+  --duty-n-bg: #22264a;
+  --duty-n-ink: #a9b1f5;
+  --duty-off-bg: #163028;
+  --duty-off-ink: #6ed6ae;
+  --duty-r-bg: #1b1d21; /* 명세는 배경 없음이나 R도 연한 배경 유지 */
+  --duty-r-ink: #9a9da3;
+  --duty-r-border: #5f636a;
+  --grid-line: rgb(255 255 255 / 0.05);
+  --cal-border: rgb(255 255 255 / 0.08);
+  /* 4단: 월 이동 헤더(가장 밝음) > 근무 횟수 줄 > 요일 줄 > 날짜 칸(#1B1D21) */
+  --cal-head: #33373f;
+  --cal-sum: #2a2e34;
+  --cal-week: #222529;
+  --cell: #1b1d21;
+  --cal-screen: #111214; /* 다크: 듀티 화면 배경 = 기본 배경 그대로 */
+  --today-fill: transparent; /* 다크: 테두리만, 배경 없음 */
+  --today-ring: #ffe135; /* 레몬 노랑: D 글자 #F4C95D(호박색)보다 밝고 초록기 */
+  --today-ring-w: 2px;
+  --weekday: #9a9da3;
+  --role-ink: #9a9da3;
+  --ev-text: #c9cbcf;
+  --sum-label: #9a9da3;
+  --sum-num: #f1f1ef;
+  --cal-head-press: #3d424b;
+  --holiday: #e8857a;
+  /* 일정 색: 듀티 색과 겹치지 않게 */
+  --ev-violet: #a970ff;
+  --ev-cyan: #4fb3f6;
+  --ev-magenta: #e87bc8;
+  --ev-mint: #45d0c2;
+  --ev-orange: #ff9d57;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-raised: var(--raised);
+  --color-sheet: var(--sheet);
+  --color-line: var(--line);
+  --color-card-border: var(--card-border);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-tab-off: var(--tab-off);
+  --color-disabled-bg: var(--disabled-bg);
+  --color-disabled-ink: var(--disabled-ink);
+  --color-primary: var(--primary);
+  --color-primary-press: var(--primary-press);
+  --color-on-primary: var(--on-primary);
+  --color-green: var(--green);
+  --color-on-green: var(--on-green);
+  --color-green-soft: var(--green-soft);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-on-sun-soft: var(--on-sun-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-draft-line: var(--draft-line);
+  --color-dot-empty: var(--dot-empty);
+  --color-empty-icon: var(--empty-icon);
+  --color-toast-bg: var(--toast-bg);
+  --color-toast-ink: var(--toast-ink);
+  --color-duty-d-bg: var(--duty-d-bg);
+  --color-duty-d-ink: var(--duty-d-ink);
+  --color-duty-e-bg: var(--duty-e-bg);
+  --color-duty-e-ink: var(--duty-e-ink);
+  --color-duty-n-bg: var(--duty-n-bg);
+  --color-duty-n-ink: var(--duty-n-ink);
+  --color-duty-off-bg: var(--duty-off-bg);
+  --color-duty-off-ink: var(--duty-off-ink);
+  --color-duty-r-bg: var(--duty-r-bg);
+  --color-duty-r-ink: var(--duty-r-ink);
+  --color-duty-r-border: var(--duty-r-border);
+  --color-grid-line: var(--grid-line);
+  --color-cal-border: var(--cal-border);
+  --color-cal-head: var(--cal-head);
+  --color-cal-sum: var(--cal-sum);
+  --color-cal-week: var(--cal-week);
+  --color-cell: var(--cell);
+  --color-today-fill: var(--today-fill);
+  --color-today-ring: var(--today-ring);
+  --color-weekday: var(--weekday);
+  --color-role-ink: var(--role-ink);
+  --color-ev-text: var(--ev-text);
+  --color-sum-label: var(--sum-label);
+  --color-sum-num: var(--sum-num);
+  --color-cal-head-press: var(--cal-head-press);
+  --color-holiday: var(--holiday);
+  --color-ev-violet: var(--ev-violet);
+  --color-ev-cyan: var(--ev-cyan);
+  --color-ev-magenta: var(--ev-magenta);
+  --color-ev-mint: var(--ev-mint);
+  --color-ev-orange: var(--ev-orange);
+
+  --font-sans: var(--font-pretendard), system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+
+  /* 타이포 위계 (이 크기만 사용)
+     title 24 SemiBold: 시작·PIN·이름·안내 화면 제목
+     heading 20 SemiBold: 상단 바 제목, 빈 화면 제목, '말로 인계' 본문
+     base 17 Regular: 본문 / sm 15: 보조 설명 / xs 12: 탭 라벨·배지
+     key 28: PIN 키패드 숫자 전용 */
+  --text-title: 24px;
+  --text-title--line-height: 1.35;
+  --text-heading: 20px;
+  --text-heading--line-height: 1.35;
+  --text-base: 17px;
+  --text-base--line-height: 1.6;
+  --text-sm: 15px;
+  --text-sm--line-height: 1.5;
+  --text-xs: 12px;
+  --text-xs--line-height: 1.3;
+  --text-key: 28px;
+  --text-key--line-height: 1;
+
+  /* 간격: 8px 단위. 좌우 여백 24px(px-6) */
+  --spacing-tabbar: 64px;
+  --spacing-action: 88px; /* 주요 버튼 56px + 위아래 16px */
+  --radius-card: 16px;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 키보드 포커스는 초록 링 */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+/* 테두리 색으로 포커스를 보여주는 입력은 링을 겹치지 않음 */
+[data-ring="border"]:focus-visible {
+  outline: none;
+}
+
+textarea,
+input {
+  font-size: 17px; /* iOS 확대 방지 (16px 이상) */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.animate-rise {
+  animation: rise 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: none;
+  }
+}
+
+/* 듀티 달 이동: 달력 본문만 좌우 슬라이드, 헤더 월 글자는 페이드 (180ms) */
+@keyframes cal-from-right {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes cal-from-left {
+  from {
+    transform: translateX(-32px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes cal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.cal-next {
+  animation: cal-from-right 0.18s ease-out;
+}
+.cal-prev {
+  animation: cal-from-left 0.18s ease-out;
+}
+.cal-fade {
+  animation: cal-fade 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cal-next,
+  .cal-prev,
+  .cal-fade {
+    animation: none;
+  }
+}
+
+/* 듀티 탭에서만 화면 배경을 --cal-screen으로 (다른 화면의 입력·칩(--raised)이 배경에 묻히지 않게 전역 --bg는 그대로) */
+:root[data-screen="duty"] {
+  --bg: var(--cal-screen);
+}
+
+/* 오늘 표시: 날짜 숫자 + 근무 배지 영역만. 배경은 칸 안(근무 막대 아래), 테두리는 주 줄 겹층(근무 막대·글자 위) */
+.today-fill {
+  background: var(--today-fill);
+}
+.today-ring {
+  border: var(--today-ring-w) solid var(--today-ring);
+}
+
+/* 달력: 탭·길게 누르기에 글자 선택(파란 표시)·iOS 콜아웃이 뜨지 않게 */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
